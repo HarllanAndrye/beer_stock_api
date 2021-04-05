@@ -5,11 +5,19 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import one.digitalinnovation.beerstock.dto.BeerDTO;
+import one.digitalinnovation.beerstock.dto.QuantityDTO;
 import one.digitalinnovation.beerstock.exception.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.exception.BeerNotFoundException;
+import one.digitalinnovation.beerstock.exception.BeerStockEmptyException;
+import one.digitalinnovation.beerstock.exception.BeerStockExceededException;
+import one.digitalinnovation.beerstock.exception.BeerStockLowerZeroException;
+
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+
+import javax.validation.Valid;
 
 @Api("Manages beer stock")
 public interface BeerControllerDocs {
@@ -40,4 +48,20 @@ public interface BeerControllerDocs {
             @ApiResponse(code = 404, message = "Beer with given id not found.")
     })
     void deleteById(@PathVariable Long id) throws BeerNotFoundException;
+    
+    @ApiOperation(value = "Increment a beer stock by a given valid Id and quantity to increment")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Success beer stock incremented"),
+            @ApiResponse(code = 400, message = "Increment informed exceeds the max stock capacity."),
+            @ApiResponse(code = 404, message = "Beer with given id not found.")
+    })
+    BeerDTO increment(@PathVariable Long id, @RequestBody @Valid QuantityDTO quantityDTO) throws BeerNotFoundException, BeerStockExceededException;
+    
+    @ApiOperation(value = "Decrement a beer stock by a given valid Id and quantity to decrement")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Success beer stock decremented"),
+            @ApiResponse(code = 400, message = "Beer with empty stock or doesn't have quantity enough to decrement the quantity informed."),
+            @ApiResponse(code = 404, message = "Beer with given id not found.")
+    })
+    BeerDTO decrement(@PathVariable Long id, @RequestBody @Valid QuantityDTO quantityDTO) throws BeerNotFoundException, BeerStockEmptyException, BeerStockLowerZeroException;
 }
